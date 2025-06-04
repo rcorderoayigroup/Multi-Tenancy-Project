@@ -1,0 +1,4 @@
+resources:
+  - ../../base
+  - namespace.yaml
+namespace: team-a-test

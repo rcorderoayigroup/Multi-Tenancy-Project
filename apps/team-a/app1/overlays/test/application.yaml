@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: team-a-app1-test
+  namespace: argocd
+spec:
+  project: team-a
+  source:
+    repoURL: https://github.com/rcorderoayigroup/Multi-Tenancy-Project.git
+    targetRevision: HEAD
+    path: apps/team-a/app1/overlays/test
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: team-a-test
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
