@@ -1,10 +1,9 @@
 resources:
   - ../../base
-  - namespace.yaml
-namespace: team-a-dev
-resources:
-  - namespace.yaml
-  - configmap.yaml
-  - deployment.yaml
-  - job-pre-sync.yaml
-  - job-post-sync.yaml
+
+helmGlobals:
+  chartHome: ../../base
+
+helmCharts:
+  - name: .
+    valuesFile: ../../base/values-dev.yaml
