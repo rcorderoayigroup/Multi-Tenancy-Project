@@ -4,7 +4,7 @@ metadata:
   name: team-a-app1-test
   namespace: argocd
 spec:
-  project: team-a-test
+  project: team-mt
   source:
     repoURL: https://github.com/rcorderoayigroup/Multi-Tenancy-Project.git
     targetRevision: HEAD
