@@ -8,7 +8,10 @@ spec:
   source:
     repoURL: https://github.com/rcorderoayigroup/Multi-Tenancy-Project.git
     targetRevision: HEAD
-    path: apps/team-a/app1/overlays/dev
+    path: apps/team-a/app1/base
+    helm:
+      valueFiles:
+        - values-dev.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: team-a-dev
@@ -18,3 +21,10 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - RespectIgnoreDifferences=true
+  ignoreDifferences:
+    - group: ""
+      kind: ConfigMap
+      name: my-configmap
+      jsonPointers:
+        - /metadata/annotations
