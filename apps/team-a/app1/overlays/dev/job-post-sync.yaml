@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: post-sync-job
+  namespace: team-a-dev
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  template:
+    spec:
+      containers:
+        - name: hello
+          image: busybox
+          command: ["echo", "Post-sync job completed"]
+      restartPolicy: Never

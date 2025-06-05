@@ -8,7 +8,11 @@ spec:
   sourceRepos:
     - '*'
   destinations:
-    - namespace: team-a-*
+    - namespace: team-a-dev
+      server: https://kubernetes.default.svc
+    - namespace: team-a-test
+      server: https://kubernetes.default.svc
+    - namespace: team-a-prod
       server: https://kubernetes.default.svc
   clusterResourceWhitelist:
     - group: '*'
