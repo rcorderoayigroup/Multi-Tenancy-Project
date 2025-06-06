@@ -1,9 +1,7 @@
 resources:
   - ../../base
 
-helmGlobals:
-  chartHome: ../../base
-
-helmCharts:
-  - name: .
-    valuesFile: ../../base/values-dev.yaml
+configMapGenerator:
+  - name: my-config
+    files:
+      - values-dev.yaml
