@@ -1,2 +1,6 @@
-resources:
-  - deployment.yaml
+helmCharts:
+  - name: app1
+    path: charts/app1
+    version: 0.1.0
+    releaseName: app1
+    namespace: team-a
