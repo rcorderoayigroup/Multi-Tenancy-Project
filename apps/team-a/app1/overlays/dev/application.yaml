@@ -10,7 +10,7 @@ spec:
     targetRevision: HEAD
     path: apps/team-a/app1/base
     kustomize:
-    enableHelm: true
+      enableHelm: true
     helm:
       valueFiles:
         - values-dev.yaml
