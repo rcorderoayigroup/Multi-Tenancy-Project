@@ -8,9 +8,7 @@ spec:
   source:
     repoURL: https://github.com/rcorderoayigroup/Multi-Tenancy-Project.git
     targetRevision: HEAD
-    path: apps/team-a/app1/overlays/test
-    plugin:
-      name: ""
+    path: apps/team-a/app1/overlays/tes
   destination:
     server: https://kubernetes.default.svc
     namespace: team-a-test
