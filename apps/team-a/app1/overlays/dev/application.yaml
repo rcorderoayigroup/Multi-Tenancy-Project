@@ -9,6 +9,8 @@ spec:
     repoURL: https://github.com/rcorderoayigroup/Multi-Tenancy-Project.git
     targetRevision: HEAD
     path: apps/team-a/app1/base
+    kustomize:
+    enableHelm: true
     helm:
       valueFiles:
         - values-dev.yaml
