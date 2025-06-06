@@ -4,9 +4,11 @@ kind: Kustomization
 resources:
   - ../../base
 
-helmCharts:
-  - name: app1
-    releaseName: app1
-    version: 0.1.0
-    repo: file://../../base
-    valuesFile: values-dev.yaml
+# Usá esto si necesitás modificar recursos
+patchesStrategicMerge:
+  - patch.yaml
+
+# Opcional: etiquetas comunes si querés que todo lo que despliegue tenga una
+commonLabels:
+  env: dev
+  team: team-a
