@@ -4,10 +4,7 @@ kind: Kustomization
 resources:
   - ../../base
 
-helmGlobals:
-  chartHome: ../../base
-
 helmCharts:
   - name: app1
-    chartPath: ../../base
+    path: ../../base
     valuesFile: values-dev.yaml
