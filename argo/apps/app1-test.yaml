@@ -6,7 +6,7 @@ metadata:
 spec:
   project: team-a
   source:
-    repoURL: https://github.com/YOUR_USER/YOUR_REPO.git
+    repoURL: https://github.com/rcorderoayigroup/Multi-Tenancy-Project.git
     targetRevision: HEAD
     path: apps/team-a/app1/overlays/test
     plugin:

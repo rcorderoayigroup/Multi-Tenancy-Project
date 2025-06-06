@@ -1,16 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: app1-dev
+  name: team-a-app1-dev
   namespace: argocd
 spec:
   project: team-a
   source:
     repoURL: https://github.com/rcorderoayigroup/Multi-Tenancy-Project.git
     targetRevision: HEAD
-    path: apps/team-a/app1/overlays/dev
-    plugin:
-      name: ""
+    path: apps/team-a/app1/base
+    helm:
+      valueFiles:
+        - values-dev.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: team-a-dev
@@ -18,3 +19,12 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - RespectIgnoreDifferences=false
+  ignoreDifferences:
+    - group: ""
+      kind: ConfigMap
+      name: my-configmap
+      jsonPointers:
+        - /metadata/annotations
