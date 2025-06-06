@@ -5,7 +5,7 @@ resources:
   - ../../base
 
 # Usá esto si necesitás modificar recursos
-patchesStrategicMerge:
+patches:
   - patch.yaml
 
 # Opcional: etiquetas comunes si querés que todo lo que despliegue tenga una
