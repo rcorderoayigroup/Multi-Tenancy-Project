@@ -1,6 +1,3 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
 resources:
   - ../../base
 
@@ -9,10 +6,4 @@ helmGlobals:
 
 helmCharts:
   - name: app1
-    releaseName: app1
     valuesFile: values/dev-values.yaml
-    namespace: team-a
-
-labels:
-  - pairs:
-      app: my-app
