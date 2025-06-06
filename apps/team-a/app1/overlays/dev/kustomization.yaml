@@ -15,3 +15,10 @@ patches:
 labels:
   - pairs:
       app: my-app
+
+helmCharts:
+  - name: app1
+    path: ../../base
+    version: 0.1.0
+    releaseName: app1
+    valuesFile: values-dev.yaml
