@@ -1,7 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
 resources:
   - ../../base
 
-configMapGenerator:
-  - name: my-config
-    files:
-      - values.yaml
+helmGlobals:
+  chartHome: ../../base
+
+helmCharts:
+  - name: app1
+    path: ../../base
+    valuesFile: values-dev.yaml
