@@ -9,6 +9,6 @@ patchesStrategicMerge:
   - patch.yaml
 
 # Opcional: etiquetas comunes si querés que todo lo que despliegue tenga una
-commonLabels:
+labels:
   env: dev
   team: team-a
