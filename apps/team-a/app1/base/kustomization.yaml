@@ -1,5 +1,4 @@
 helmCharts:
   - name: app1
-    path: ../../charts/app1
     releaseName: app1
     valuesFile: values.yaml
