@@ -4,15 +4,9 @@ kind: Kustomization
 resources:
   - ../../base
 
-helmGlobals:
-  chartHome: ../../base/charts
-
 helmCharts:
   - name: app1
     releaseName: app1
-    valuesFile: values/dev-values.yaml
-    namespace: team-a
-
-labels:
-  - pairs:
-      app: my-app
+    version: 0.1.0
+    repo: file://../base/charts/app1
+    valuesFile: values.yaml

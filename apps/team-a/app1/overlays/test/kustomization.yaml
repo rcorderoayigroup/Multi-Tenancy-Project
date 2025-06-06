@@ -1,4 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
 resources:
   - ../../base
-  - namespace.yaml
-namespace: team-a-test
+
+helmCharts:
+  - name: app1
+    releaseName: app1
+    version: 0.1.0
+    repo: file://../base/charts/app1
+    valuesFile: values.yaml

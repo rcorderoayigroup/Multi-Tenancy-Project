@@ -1,21 +1,20 @@
-﻿apiVersion: apps/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include \"app1.fullname\" . }}
-  labels:
-    app: {{ include \"app1.name\" . }}
+  name: {{ .Chart.Name }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include \"app1.name\" . }}
+      app: {{ .Chart.Name }}
   template:
     metadata:
       labels:
-        app: {{ include \"app1.name\" . }}
+        app: {{ .Chart.Name }}
     spec:
       containers:
-        - name: {{ include \"app1.name\" . }}
-          image: \"{{ .Values.image.repository }}:{{ .Values.image.tag }}\"
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: {{ .Values.service.port }}
+            - containerPort: 80

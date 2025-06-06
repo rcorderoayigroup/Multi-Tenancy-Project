@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app1-prod
+  namespace: argocd
+spec:
+  project: team-a
+  source:
+    repoURL: https://github.com/YOUR_USER/YOUR_REPO.git
+    targetRevision: HEAD
+    path: apps/team-a/app1/overlays/prod
+    plugin:
+      name: ""
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: team-a-prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
