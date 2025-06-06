@@ -9,5 +9,5 @@ helmGlobals:
 
 helmCharts:
   - name: app1
-    path: ../../base
+    chartPath: ../../base
     valuesFile: values-dev.yaml
