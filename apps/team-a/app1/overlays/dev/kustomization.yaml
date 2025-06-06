@@ -4,4 +4,4 @@ resources:
 configMapGenerator:
   - name: my-config
     files:
-      - values-dev.yaml
+      - values.yaml
