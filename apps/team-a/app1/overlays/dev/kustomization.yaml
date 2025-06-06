@@ -6,7 +6,10 @@ resources:
 
 # Usá esto si necesitás modificar recursos
 patches:
-  - patch.yaml
+  - path: patch.yaml
+    target:
+      kind: Deployment
+      name: my-app
 
 # Opcional: etiquetas comunes si querés que todo lo que despliegue tenga una
 labels:
