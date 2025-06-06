@@ -1,3 +1,2 @@
-helmCharts:
-  - name: app1
-    valuesFile: values.yaml
+resources:
+  - values.yaml
