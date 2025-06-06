@@ -4,14 +4,15 @@ kind: Kustomization
 resources:
   - ../../base
 
-# Usá esto si necesitás modificar recursos
-patches:
-  - path: patch.yaml
-    target:
-      kind: Deployment
-      name: my-app
+helmGlobals:
+  chartHome: ../../base/charts
 
-# Opcional: etiquetas comunes si querés que todo lo que despliegue tenga una
+helmCharts:
+  - name: app1
+    releaseName: app1
+    valuesFile: values/dev-values.yaml
+    namespace: team-a
+
 labels:
   - pairs:
       app: my-app
