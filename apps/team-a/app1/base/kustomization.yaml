@@ -1,2 +1,2 @@
 resources:
-  - values.yaml
+  - deployment.yaml
