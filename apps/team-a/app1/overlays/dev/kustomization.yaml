@@ -10,5 +10,5 @@ patchesStrategicMerge:
 
 # Opcional: etiquetas comunes si querés que todo lo que despliegue tenga una
 labels:
-  env: dev
-  team: team-a
+  - pairs:
+      app: my-app
