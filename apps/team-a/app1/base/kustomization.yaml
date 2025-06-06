@@ -1,5 +1,3 @@
 helmCharts:
   - name: app1
-    repoURL: https://github.com/rcorderoayigroup/Multi-Tenancy-Project.git
-    releaseName: app1
     valuesFile: values.yaml
