@@ -21,7 +21,7 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-      - RespectIgnoreDifferences=true
+      - RespectIgnoreDifferences=false
   ignoreDifferences:
     - group: ""
       kind: ConfigMap
