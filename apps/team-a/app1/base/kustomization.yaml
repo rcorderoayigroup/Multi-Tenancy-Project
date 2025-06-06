@@ -1,4 +1,3 @@
 helmCharts:
   - name: app1
-    path: .
     valuesFile: values.yaml
