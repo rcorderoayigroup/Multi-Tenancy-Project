@@ -3,6 +3,6 @@ kind: Kustomization
 
 helmCharts:
   - name: app1
-    chartPath: charts/app1
+    repo: file://charts/app1
     releaseName: app1
     valuesFile: values.yaml
