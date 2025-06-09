@@ -1,0 +1,13 @@
+﻿apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+  - ../../base
+
+namespace: team-a-prod
+
+commonLabels:
+  app.kubernetes.io/part-of: app1
+
+patchesStrategicMerge:
+  - patch.yaml

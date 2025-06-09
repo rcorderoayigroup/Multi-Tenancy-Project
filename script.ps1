@@ -1,24 +1,32 @@
-# Crear estructura de carpetas
-$paths = @(
-  "apps/team-a/app1/base",
-  "apps/team-a/app1/charts/app1/templates",
-  "apps/team-a/app1/overlays/dev",
-  "apps/team-a/app1/overlays/prod"
-)
-foreach ($path in $paths) {
-  New-Item -ItemType Directory -Path $path -Force
+# Script para recrear estructura apps/team-a/app1 con Helm chart y Kustomize
+# Requiere helm y kubectl instalados en PATH
+
+$root = "apps\team-a\app1"
+
+# Borra carpeta si existe
+if (Test-Path $root) {
+    Write-Host "Borrando carpeta $root"
+    Remove-Item -Recurse -Force $root
 }
 
-# Crear Chart.yaml
-@"
-apiVersion: v2
-name: app1
-version: 0.1.0
-description: A Helm chart for Kubernetes
-"@ | Set-Content -Path "apps/team-a/app1/charts/app1/Chart.yaml"
+# Crear carpetas base y overlay/prod
+Write-Host "Creando carpetas base y overlay/prod..."
+New-Item -ItemType Directory -Path "$root\base" -Force | Out-Null
+New-Item -ItemType Directory -Path "$root\base\charts" -Force | Out-Null
+New-Item -ItemType Directory -Path "$root\overlay\prod" -Force | Out-Null
 
-# Crear values.yaml (base)
-@"
+# Crear Helm chart básico con helm create
+Write-Host "Creando Helm chart básico en base/charts/app1 ..."
+helm create "$root\base\charts\app1"
+
+# Borra templates de ejemplo innecesarios para dejar solo deployment y service
+Write-Host "Limpiando templates innecesarios del chart..."
+Remove-Item "$root\base\charts\app1\templates\hpa.yaml" -ErrorAction SilentlyContinue
+Remove-Item "$root\base\charts\app1\templates\ingress.yaml" -ErrorAction SilentlyContinue
+Remove-Item "$root\base\charts\app1\templates\tests" -Recurse -Force -ErrorAction SilentlyContinue
+
+# Crear values.yaml base simple (puedes editar después)
+$valuesYaml = @"
 replicaCount: 1
 
 image:
@@ -37,106 +45,62 @@ resources:
   requests:
     cpu: 100m
     memory: 128Mi
-"@ | Set-Content -Path "apps/team-a/app1/values.yaml"
+"@
 
-# Crear templates/deployment.yaml y service.yaml
-@"
+$valuesPath = "$root\base\values.yaml"
+Write-Host "Creando values.yaml base..."
+$valuesYaml | Out-File -Encoding utf8 $valuesPath
+
+# Crear kustomization.yaml en base/ usando chartPath y values.yaml
+$kustomBase = @"
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+helmCharts:
+  - name: app1
+    chartPath: charts/app1
+    releaseName: app1
+    valuesFile: values.yaml
+"@
+
+$kustomBasePath = "$root\base\kustomization.yaml"
+Write-Host "Creando kustomization.yaml en base/ ..."
+$kustomBase | Out-File -Encoding utf8 $kustomBasePath
+
+# Crear kustomization.yaml en overlay/prod que usa base/
+$kustomOverlayProd = @"
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+  - ../../base
+
+namespace: team-a-prod
+
+commonLabels:
+  app.kubernetes.io/part-of: app1
+
+patchesStrategicMerge:
+  - patch.yaml
+"@
+
+$kustomOverlayProdPath = "$root\overlay\prod\kustomization.yaml"
+Write-Host "Creando kustomization.yaml en overlay/prod/ ..."
+$kustomOverlayProd | Out-File -Encoding utf8 $kustomOverlayProdPath
+
+# Crear patch.yaml en overlay/prod para cambiar replicas a 2 por ejemplo
+$patchYaml = @"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}
+  name: app1
 spec:
-  replicas: {{ .Values.replicaCount }}
-  selector:
-    matchLabels:
-      app: {{ .Release.Name }}
-  template:
-    metadata:
-      labels:
-        app: {{ .Release.Name }}
-    spec:
-      containers:
-        - name: {{ .Release.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            - containerPort: {{ .Values.service.port }}
-"@ | Set-Content -Path "apps/team-a/app1/charts/app1/templates/deployment.yaml"
+  replicas: 2
+"@
 
-@"
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ .Release.Name }}
-spec:
-  type: {{ .Values.service.type }}
-  selector:
-    app: {{ .Release.Name }}
-  ports:
-    - port: {{ .Values.service.port }}
-      targetPort: {{ .Values.service.port }}
-"@ | Set-Content -Path "apps/team-a/app1/charts/app1/templates/service.yaml"
+$patchPath = "$root\overlay\prod\patch.yaml"
+Write-Host "Creando patch.yaml en overlay/prod/ para modificar replicas..."
+$patchYaml | Out-File -Encoding utf8 $patchPath
 
-# Crear kustomization.yaml en base
-@"
-helmCharts:
-  - name: app1
-    repo: file://charts
-    releaseName: app1
-    version: 0.1.0
-    valuesFile: ../../values.yaml
-"@ | Set-Content -Path "apps/team-a/app1/base/kustomization.yaml"
-
-# Crear values-dev.yaml y values-prod.yaml
-@"
-replicaCount: 1
-"@ | Set-Content -Path "apps/team-a/app1/overlays/dev/values-dev.yaml"
-
-@"
-replicaCount: 2
-"@ | Set-Content -Path "apps/team-a/app1/overlays/prod/values-prod.yaml"
-
-# Crear kustomization.yaml en overlays/dev
-@"
-resources:
-  - ../../base
-
-configMapGenerator:
-  - name: my-config
-    files:
-      - values-dev.yaml
-
-helmGlobals:
-  chartHome: ../../base
-
-helmCharts:
-  - name: app1
-    repo: file://../../base/charts
-    version: 0.1.0
-    releaseName: app1
-    valuesFile: values-dev.yaml
-"@ | Set-Content -Path "apps/team-a/app1/overlays/dev/kustomization.yaml"
-
-# Crear kustomization.yaml en overlays/prod
-@"
-resources:
-  - ../../base
-
-configMapGenerator:
-  - name: my-config
-    files:
-      - values-prod.yaml
-
-helmGlobals:
-  chartHome: ../../base
-
-helmCharts:
-  - name: app1
-    repo: file://../../base/charts
-    version: 0.1.0
-    releaseName: app1
-    valuesFile: values-prod.yaml
-"@ | Set-Content -Path "apps/team-a/app1/overlays/prod/kustomization.yaml"
-
-# Empaquetar el chart
-helm package apps/team-a/app1/charts/app1 -d apps/team-a/app1/base
+Write-Host "Estructura apps/team-a/app1 creada correctamente."
+Write-Host "Recomendación: luego editá values.yaml y patch.yaml según necesites."
