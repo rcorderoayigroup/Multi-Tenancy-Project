@@ -5,4 +5,5 @@ helmCharts:
   - name: app1
     releaseName: app1
     repo: file://.
+    version: 0.1.0
     valuesFile: values.yaml
