@@ -1,0 +1,17 @@
+resources:
+  - ../../base
+
+configMapGenerator:
+  - name: my-config
+    files:
+      - values-dev.yaml
+
+helmGlobals:
+  chartHome: ../../base
+
+helmCharts:
+  - name: app1
+    repo: file://../../base/charts
+    version: 0.1.0
+    releaseName: app1
+    valuesFile: values-dev.yaml

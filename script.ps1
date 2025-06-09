@@ -1,162 +1,142 @@
-# === SETUP ===
-$basePath = "Multi-Tenancy-Project"
-$appPath = "$basePath\apps\team-a\app1"
-$chartPath = "$appPath\base\charts\app1"
-$overlays = @("dev", "test", "prod")
-
-# === DIRECTORIOS ===
-$folders = @(
-    "$chartPath\templates",
-    "$basePath\argo\apps"
-) + ($overlays | ForEach-Object { "$appPath\overlays\$_" })
-
-foreach ($folder in $folders) {
-    New-Item -ItemType Directory -Force -Path $folder | Out-Null
+# Crear estructura de carpetas
+$paths = @(
+  "apps/team-a/app1/base",
+  "apps/team-a/app1/charts/app1/templates",
+  "apps/team-a/app1/overlays/dev",
+  "apps/team-a/app1/overlays/prod"
+)
+foreach ($path in $paths) {
+  New-Item -ItemType Directory -Path $path -Force
 }
 
-# === HELM CHART ===
+# Crear Chart.yaml
 @"
 apiVersion: v2
 name: app1
-description: Helm chart for app1
-type: application
 version: 0.1.0
-appVersion: "1.0.0"
-"@ | Set-Content "$chartPath\Chart.yaml"
+description: A Helm chart for Kubernetes
+"@ | Set-Content -Path "apps/team-a/app1/charts/app1/Chart.yaml"
 
+# Crear values.yaml (base)
+@"
+replicaCount: 1
+
+image:
+  repository: nginx
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+"@ | Set-Content -Path "apps/team-a/app1/values.yaml"
+
+# Crear templates/deployment.yaml y service.yaml
 @"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Chart.Name }}
+  name: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ .Chart.Name }}
+      app: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ .Chart.Name }}
+        app: {{ .Release.Name }}
     spec:
       containers:
-        - name: {{ .Chart.Name }}
+        - name: {{ .Release.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: 80
-"@ | Set-Content "$chartPath\templates\deployment.yaml"
+            - containerPort: {{ .Values.service.port }}
+"@ | Set-Content -Path "apps/team-a/app1/charts/app1/templates/deployment.yaml"
 
 @"
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Chart.Name }}
+  name: {{ .Release.Name }}
 spec:
   type: {{ .Values.service.type }}
   selector:
-    app: {{ .Chart.Name }}
+    app: {{ .Release.Name }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: 80
-"@ | Set-Content "$chartPath\templates\service.yaml"
+      targetPort: {{ .Values.service.port }}
+"@ | Set-Content -Path "apps/team-a/app1/charts/app1/templates/service.yaml"
 
-# === values.yaml base ===
+# Crear kustomization.yaml en base
 @"
-replicaCount: 1
-image:
-  repository: nginx
-  tag: latest
-  pullPolicy: IfNotPresent
-service:
-  type: ClusterIP
-  port: 80
-"@ | Set-Content "$appPath\base\values.yaml"
-
-# === kustomization.yaml base ===
-@"
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
 helmCharts:
   - name: app1
+    repo: file://charts
     releaseName: app1
     version: 0.1.0
-    repo: file://charts/app1
-    valuesFile: values.yaml
-"@ | Set-Content "$appPath\base\kustomization.yaml"
+    valuesFile: ../../values.yaml
+"@ | Set-Content -Path "apps/team-a/app1/base/kustomization.yaml"
 
-# === OVERLAYS ===
-$replicas = @{ "dev" = 2; "test" = 3; "prod" = 4 }
+# Crear values-dev.yaml y values-prod.yaml
+@"
+replicaCount: 1
+"@ | Set-Content -Path "apps/team-a/app1/overlays/dev/values-dev.yaml"
 
-foreach ($env in $overlays) {
-    @"
-replicaCount: $($replicas[$env])
-"@ | Set-Content "$appPath\overlays\$env\values.yaml"
+@"
+replicaCount: 2
+"@ | Set-Content -Path "apps/team-a/app1/overlays/prod/values-prod.yaml"
 
-    @"
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
+# Crear kustomization.yaml en overlays/dev
+@"
 resources:
   - ../../base
 
+configMapGenerator:
+  - name: my-config
+    files:
+      - values-dev.yaml
+
+helmGlobals:
+  chartHome: ../../base
+
 helmCharts:
   - name: app1
-    releaseName: app1
+    repo: file://../../base/charts
     version: 0.1.0
-    repo: file://../base/charts/app1
-    valuesFile: values.yaml
-"@ | Set-Content "$appPath\overlays\$env\kustomization.yaml"
-}
+    releaseName: app1
+    valuesFile: values-dev.yaml
+"@ | Set-Content -Path "apps/team-a/app1/overlays/dev/kustomization.yaml"
 
-# === Argo CD PROJECT ===
+# Crear kustomization.yaml en overlays/prod
 @"
-apiVersion: argoproj.io/v1alpha1
-kind: AppProject
-metadata:
-  name: team-a
-  namespace: argocd
-spec:
-  description: Project for team-a
-  sourceRepos:
-    - '*'
-  destinations:
-    - namespace: '*'
-      server: '*'
-  clusterResourceWhitelist:
-    - group: '*'
-      kind: '*'
-  namespaceResourceWhitelist:
-    - group: '*'
-      kind: '*'
-"@ | Set-Content "$basePath\argo\project-team-a.yaml"
+resources:
+  - ../../base
 
-# === Argo CD APPLICATIONS ===
-foreach ($env in $overlays) {
-    @"
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: app1-$env
-  namespace: argocd
-spec:
-  project: team-a
-  source:
-    repoURL: https://github.com/YOUR_USER/YOUR_REPO.git
-    targetRevision: HEAD
-    path: apps/team-a/app1/overlays/$env
-    plugin:
-      name: ""
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: team-a-$env
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-"@ | Set-Content "$basePath\argo\apps\app1-$env.yaml"
-}
+configMapGenerator:
+  - name: my-config
+    files:
+      - values-prod.yaml
 
-Write-Host "`n✅ Multi-tenancy completo generado en '$basePath'"
-Write-Host "👉 Reemplazá 'YOUR_USER/YOUR_REPO.git' en los YAML de Argo CD."
+helmGlobals:
+  chartHome: ../../base
+
+helmCharts:
+  - name: app1
+    repo: file://../../base/charts
+    version: 0.1.0
+    releaseName: app1
+    valuesFile: values-prod.yaml
+"@ | Set-Content -Path "apps/team-a/app1/overlays/prod/kustomization.yaml"
+
+# Empaquetar el chart
+helm package apps/team-a/app1/charts/app1 -d apps/team-a/app1/base
