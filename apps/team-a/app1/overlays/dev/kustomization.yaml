@@ -8,5 +8,5 @@ helmCharts:
   - name: app1
     releaseName: app1
     version: 0.1.0
-    repo: file://../base/charts/app1
+    repo: file://../base/charts/app1/template
     valuesFile: values.yaml
