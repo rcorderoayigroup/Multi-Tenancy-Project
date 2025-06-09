@@ -7,6 +7,5 @@ resources:
 helmCharts:
   - name: app1
     releaseName: app1
-    version: 0.1.0
-    repo: file://charts
+    chartPath: charts/app1
     valuesFile: values.yaml
